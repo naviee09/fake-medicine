@@ -253,7 +253,7 @@ function Remedies() {
                   <h4>Recommended Remedies</h4>
                 </div>
                 <div className="remedies-list">
-                  {remedies.map((remedy, index) => (
+                  {remedies.map((remedy) => (
                     <div key={remedy.id} className="remedy-card">
                       <div className="remedy-header">
                         <h5>{remedy.name} <span className="category">({remedy.category})</span></h5>
