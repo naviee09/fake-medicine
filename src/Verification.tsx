@@ -24,6 +24,7 @@ interface Medicine {
 function Verification() {
   const navigate = useNavigate()
   const userName = localStorage.getItem('userName') || 'Guest'
+  const apiBaseUrl = window.location.hostname === 'localhost' ? '/api' : '/_/backend/api'
   const [medicineName, setMedicineName] = useState('')
   const [medicineResult, setMedicineResult] = useState<Medicine | null>(null)
   const [loading, setLoading] = useState(false)
@@ -161,13 +162,23 @@ function Verification() {
     setMedicineResult(null)
 
     try {
-      const response = await fetch('/api/medicine/search', {
+      const response = await fetch(`${apiBaseUrl}/medicine/search`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: medicineName, category: selectedCategory || undefined })
       })
 
-      const data = await response.json()
+      const responseText = await response.text()
+      if (!responseText) {
+        throw new Error('Empty response from backend')
+      }
+
+      let data: any
+      try {
+        data = JSON.parse(responseText)
+      } catch {
+        throw new Error('Invalid JSON response from backend')
+      }
 
       if (!response.ok) {
         const message = data?.error || 'Tablet not found in database'
@@ -191,19 +202,29 @@ function Verification() {
   const handleBrowseMedicines = async () => {
     setBrowseLoading(true)
     try {
-      const response = await fetch('/api/medicine/browse', {
+      const response = await fetch(`${apiBaseUrl}/medicine/browse`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ category: selectedCategory, limit: 10 })
       })
 
-      const data = await response.json()
+      const responseText = await response.text()
+      if (!responseText) {
+        throw new Error('Empty response from backend')
+      }
+
+      let data: any
+      try {
+        data = JSON.parse(responseText)
+      } catch {
+        throw new Error('Invalid JSON response from backend')
+      }
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to browse medicines')
       }
 
-      setBrowseMedicines(data.medicines)
+      setBrowseMedicines(data.medicines || [])
     } catch (err) {
       console.error('Browse error:', err)
     } finally {
